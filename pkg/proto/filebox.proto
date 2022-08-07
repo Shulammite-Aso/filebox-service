@@ -22,7 +22,8 @@ message SendFileRequest {
   
   message UpdateFileRequest {
     string username = 1;
-    bytes file = 2;
+    string fileName = 2;
+    bytes file = 3;
   }
 
   message GetFileRequest {

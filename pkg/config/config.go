@@ -3,16 +3,16 @@ package config
 import "github.com/spf13/viper"
 
 type Config struct {
-	Port  string `mapstructure:"PORT"`
-	DBUrl string `mapstructure:"DB_URL"`
+	Port           string `mapstructure:"PORT"`
+	DBUrl          string `mapstructure:"DB_URL"`
+	CloudName      string `mapstructure:"CLOUDINARY_CLOUD_NAME"`
+	CloudApiKey    string `mapstructure:"CLOUDINARY_API_KEY"`
+	CloudApiSecret string `mapstructure:"CLOUDINARY_API_SECRET"`
+	CloudFolder    string `mapstructure:"CLOUDINARY_UPLOAD_FOLDER"`
 }
 
 func LoadConfig() (config Config, err error) {
-	viper.AddConfigPath("./pkg/config/envs")
-	viper.SetConfigName("dev")
-	viper.SetConfigType("env")
-
-	viper.AutomaticEnv()
+	viper.SetConfigFile(".env")
 
 	err = viper.ReadInConfig()
 
