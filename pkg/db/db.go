@@ -24,7 +24,7 @@ func Init(url string) Handler {
 		log.Fatalf("Error Starting MongoDB Client: %v", err)
 	}
 
-	collection := client.Database("filebox_svc").Collection("user_filebox")
+	collection := client.Database("fileboxDB").Collection("file")
 
 	return Handler{collection}
 }

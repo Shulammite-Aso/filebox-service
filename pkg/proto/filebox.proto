@@ -42,9 +42,10 @@ message SendFileRequest {
   
   message SendFileToPersonRequest {
     string username = 1;
-    string email = 2;
-    string senderUsername = 3;
-    bytes file = 4;
+    string fileName = 2;
+    string email = 3;
+    string senderUsername = 4;
+    bytes file = 5;
   }
 
   // RESPONSES
