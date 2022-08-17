@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/Shulammite-Aso/filebox-service/pkg/client"
 	"github.com/Shulammite-Aso/filebox-service/pkg/db"
 	"github.com/Shulammite-Aso/filebox-service/pkg/models"
 	"github.com/Shulammite-Aso/filebox-service/pkg/proto"
@@ -19,7 +20,8 @@ import (
 
 type Server struct {
 	proto.UnimplementedFileboxServiceServer
-	H db.Handler
+	H        db.Handler
+	EmailSvc client.EmailServiceClient
 }
 
 func (s *Server) SendFile(ctx context.Context, req *proto.SendFileRequest) (*proto.SuccessMessage, error) {
@@ -225,6 +227,9 @@ func (s *Server) SendFileToPerson(ctx context.Context, req *proto.SendFileToPers
 	log.Println("create file entry:", res.InsertedID)
 
 	// Call email service to send email to receiver
+	if _, err := s.EmailSvc.SendEmail(req.Username, req.FileName, req.SenderUsername); err != nil {
+		log.Println(err)
+	}
 
 	return &proto.SuccessMessage{
 		Message: "File uploaded",

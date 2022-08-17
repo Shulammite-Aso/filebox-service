@@ -5,6 +5,7 @@ import "github.com/spf13/viper"
 type Config struct {
 	Port           string `mapstructure:"PORT"`
 	DBUrl          string `mapstructure:"DB_URL"`
+	EmailSvcUrl    string `mapstructure:"EMAIL_SVC_URL"`
 	CloudName      string `mapstructure:"CLOUDINARY_CLOUD_NAME"`
 	CloudApiKey    string `mapstructure:"CLOUDINARY_API_KEY"`
 	CloudApiSecret string `mapstructure:"CLOUDINARY_API_SECRET"`

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/Shulammite-Aso/filebox-service/pkg/client"
 	"github.com/Shulammite-Aso/filebox-service/pkg/config"
 	"github.com/Shulammite-Aso/filebox-service/pkg/db"
 	"github.com/Shulammite-Aso/filebox-service/pkg/proto"
@@ -28,8 +29,11 @@ func main() {
 
 	log.Println("Product service listening on", c.Port)
 
+	emailSvc := client.InitEmailServiceClient(c.EmailSvcUrl)
+
 	s := services.Server{
-		H: h,
+		H:        h,
+		EmailSvc: emailSvc,
 	}
 
 	grpcServer := grpc.NewServer()
