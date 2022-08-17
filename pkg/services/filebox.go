@@ -8,8 +8,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/Shulammite-Aso/filebox-service/pkg/client"
 	"github.com/Shulammite-Aso/filebox-service/pkg/db"
@@ -37,13 +35,17 @@ func (s *Server) SendFile(ctx context.Context, req *proto.SendFileRequest) (*pro
 	result := s.H.Collection.FindOne(context.Background(), bson.D{{"username", req.Username}, {"fileName", req.FileName}})
 
 	if err := result.Decode(&fileEntry); err != mongo.ErrNoDocuments {
-		return &proto.SuccessMessage{}, status.Errorf(codes.InvalidArgument, "You already own a file with this name, please rename file")
+		return &proto.SuccessMessage{
+			Error: "You already own a file with this name, please rename file",
+		}, nil
 	}
 
 	err := ioutil.WriteFile(req.FileName, req.File, 0)
 
 	if err != nil {
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	defer os.Remove(req.FileName)
@@ -51,7 +53,9 @@ func (s *Server) SendFile(ctx context.Context, req *proto.SendFileRequest) (*pro
 	url, publicId, err := utils.UploadFileHelper(req.FileName)
 
 	if err != nil {
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	fileEntry = models.FileEntry{
@@ -63,7 +67,9 @@ func (s *Server) SendFile(ctx context.Context, req *proto.SendFileRequest) (*pro
 
 	res, err := s.H.Collection.InsertOne(context.Background(), fileEntry)
 	if err != nil {
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	log.Println("create file entry:", res.InsertedID)
@@ -82,7 +88,9 @@ func (s *Server) UpdateFile(ctx context.Context, req *proto.UpdateFileRequest) (
 	err := ioutil.WriteFile(req.FileName, req.File, 0)
 
 	if err != nil {
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	defer os.Remove(req.FileName)
@@ -90,7 +98,9 @@ func (s *Server) UpdateFile(ctx context.Context, req *proto.UpdateFileRequest) (
 	url, publicId, err := utils.UploadFileHelper(req.FileName)
 
 	if err != nil {
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	var fileEntry models.FileEntry
@@ -102,9 +112,13 @@ func (s *Server) UpdateFile(ctx context.Context, req *proto.UpdateFileRequest) (
 
 	if err := result.Decode(&fileEntry); err != nil {
 		if err == mongo.ErrNoDocuments {
-			return &proto.SuccessMessage{}, status.Errorf(codes.InvalidArgument, "No such file in your box")
+			return &proto.SuccessMessage{
+				Error: "No such file in your box",
+			}, nil
 		}
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	err3 := utils.RemoveFileHelper(fileEntry.CloudPublicID)
@@ -126,9 +140,13 @@ func (s *Server) GetFile(ctx context.Context, req *proto.GetFileRequest) (*proto
 
 	if err := result.Decode(&fileEntry); err != nil {
 		if err == mongo.ErrNoDocuments {
-			return &proto.GetFileResponse{}, status.Errorf(codes.InvalidArgument, "No such file in your box")
+			return &proto.GetFileResponse{
+				Error: "No such file in your box",
+			}, nil
 		}
-		return &proto.GetFileResponse{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.GetFileResponse{
+			Error: err.Error(),
+		}, nil
 	}
 
 	return &proto.GetFileResponse{FileURL: fileEntry.File}, nil
@@ -146,7 +164,9 @@ func (s *Server) GetListOfAllFiles(ctx context.Context, req *proto.GetListOfAllF
 	}
 
 	if err := cur.All(context.Background(), &results); err != nil {
-		return &proto.GetListOfAllFilesResponse{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.GetListOfAllFilesResponse{
+			Error: err.Error(),
+		}, nil
 	}
 
 	for _, result := range results {
@@ -164,9 +184,13 @@ func (s *Server) DeleteFile(ctx context.Context, req *proto.DeleteFileRequest) (
 
 	if err := result.Decode(&fileEntry); err != nil {
 		if err == mongo.ErrNoDocuments {
-			return &proto.SuccessMessage{}, status.Errorf(codes.InvalidArgument, "No such file in your box")
+			return &proto.SuccessMessage{
+				Error: "No such file in your box",
+			}, nil
 		}
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	err := utils.RemoveFileHelper(fileEntry.CloudPublicID)
@@ -195,13 +219,17 @@ func (s *Server) SendFileToPerson(ctx context.Context, req *proto.SendFileToPers
 	result := s.H.Collection.FindOne(context.Background(), bson.D{{"username", req.Username}, {"fileName", req.FileName}})
 
 	if err := result.Decode(&fileEntry); err != mongo.ErrNoDocuments {
-		return &proto.SuccessMessage{}, status.Errorf(codes.InvalidArgument, "this user already own a file with this name, please rename file")
+		return &proto.SuccessMessage{
+			Error: "this user already own a file with this name, please rename file",
+		}, nil
 	}
 
 	err := ioutil.WriteFile(req.FileName, req.File, 0)
 
 	if err != nil {
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	defer os.Remove(req.FileName)
@@ -209,7 +237,9 @@ func (s *Server) SendFileToPerson(ctx context.Context, req *proto.SendFileToPers
 	url, publicId, err := utils.UploadFileHelper(req.FileName)
 
 	if err != nil {
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	fileEntry = models.FileEntry{
@@ -221,7 +251,9 @@ func (s *Server) SendFileToPerson(ctx context.Context, req *proto.SendFileToPers
 
 	res, err := s.H.Collection.InsertOne(context.Background(), fileEntry)
 	if err != nil {
-		return &proto.SuccessMessage{}, status.Errorf(codes.Internal, err.Error())
+		return &proto.SuccessMessage{
+			Error: err.Error(),
+		}, nil
 	}
 
 	log.Println("create file entry:", res.InsertedID)
