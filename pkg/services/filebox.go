@@ -40,7 +40,7 @@ func (s *Server) SendFile(ctx context.Context, req *proto.SendFileRequest) (*pro
 		}, nil
 	}
 
-	err := ioutil.WriteFile(req.FileName, req.File, 0)
+	err := os.WriteFile(req.FileName, req.File, 0)
 
 	if err != nil {
 		return &proto.SuccessMessage{
@@ -164,13 +164,11 @@ func (s *Server) GetListOfAllFiles(ctx context.Context, req *proto.GetListOfAllF
 	}
 
 	if err := cur.All(context.Background(), &results); err != nil {
-		return &proto.GetListOfAllFilesResponse{
-			Error: err.Error(),
-		}, nil
+		return &proto.GetListOfAllFilesResponse{}, nil
 	}
 
 	for _, result := range results {
-		allFiles = append(allFiles, result.File)
+		allFiles = append(allFiles, result.FileName)
 	}
 
 	return &proto.GetListOfAllFilesResponse{AllFiles: allFiles}, nil
@@ -259,7 +257,7 @@ func (s *Server) SendFileToPerson(ctx context.Context, req *proto.SendFileToPers
 	log.Println("create file entry:", res.InsertedID)
 
 	// Call email service to send email to receiver
-	if _, err := s.EmailSvc.SendEmail(req.Username, req.FileName, req.SenderUsername); err != nil {
+	if _, err := s.EmailSvc.SendEmail(req.Email, req.FileName, req.SenderUsername); err != nil {
 		log.Println(err)
 	}
 
